@@ -7,7 +7,7 @@ import Typography from '@/constants/Typography';
 import { fetchBodyParts, fetchEquipmentList, fetchExercisesByBodyPart } from '@/services/exerciseService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, {
    FadeInUp,
    useAnimatedScrollHandler,
@@ -15,6 +15,7 @@ import Animated, {
    useSharedValue,
    withSpring
 } from 'react-native-reanimated';
+import { SafeAreaView as SafeAreaViewContainer } from 'react-native-safe-area-context';
 
 // Group exercises by body part
 const groupExercisesByBodyPart = (exercises) => {
@@ -193,7 +194,7 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaViewContainer style={styles.container}>
       <AnimatedHeader scrollOffset={scrollOffset} />
 
       {!selectedBodyPart ? (
@@ -348,39 +349,41 @@ export default function Index() {
               </TouchableOpacity>
             </View>
           ) : (
-            <Animated.ScrollView 
-              onScroll={scrollHandler}
-              scrollEventThrottle={16}
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
-            >
-              {Object.keys(groupedExercises).map((bodyPart, index) => (
-                <Animated.View 
-                  key={bodyPart}
-                  entering={FadeInUp.duration(600).delay(300 + index * 100)}
-                  style={styles.section}
-                >
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>{bodyPart}</Text>
-                    <Text style={styles.exerciseCount}>{groupedExercises[bodyPart].length} exercises</Text>
-                  </View>
-                  <View style={styles.cardsContainer}>
-                    {groupedExercises[bodyPart].map((exercise) => (
-                      <ExerciseCard 
-                        key={exercise.id} 
-                        exercise={exercise} 
-                      />
-                    ))}
-                  </View>
-                </Animated.View>
-              ))}
-            </Animated.ScrollView>
+            <View style={styles.exercisesContainer}>
+              <Animated.ScrollView 
+                onScroll={scrollHandler}
+                scrollEventThrottle={16}
+                style={styles.exercisesScrollView}
+                contentContainerStyle={styles.scrollContent}
+              >
+                {Object.keys(groupedExercises).map((bodyPart, index) => (
+                  <Animated.View 
+                    key={bodyPart}
+                    entering={FadeInUp.duration(600).delay(300 + index * 100)}
+                    style={styles.section}
+                  >
+                    <View style={styles.sectionHeader}>
+                      <Text style={styles.sectionTitle}>{bodyPart}</Text>
+                      <Text style={styles.exerciseCount}>{groupedExercises[bodyPart].length} exercises</Text>
+                    </View>
+                    <View style={styles.cardsContainer}>
+                      {groupedExercises[bodyPart].map((exercise) => (
+                        <ExerciseCard 
+                          key={exercise.id} 
+                          exercise={exercise} 
+                        />
+                      ))}
+                    </View>
+                  </Animated.View>
+                ))}
+              </Animated.ScrollView>
+            </View>
           )}
         </>
       )}
       
       <AnimatedTabBar />
-    </SafeAreaView>
+    </SafeAreaViewContainer>
   );
 }
 
@@ -469,6 +472,12 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  exercisesScrollView: {
+    flex: 1,
+  },
+  exercisesContainer: {
+    flex: 1,
+  },
   scrollContent: {
     paddingBottom: 80, // Space for the tab bar
   },
@@ -533,12 +542,12 @@ const styles = StyleSheet.create({
   // Body part selection styles
   bodyPartSelection: {
     flex: 1,
-    padding: 20,
   },
   bodyPartGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    padding: 20,
   },
   bodyPartCard: {
     width: '48%',

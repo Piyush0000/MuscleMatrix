@@ -1,8 +1,10 @@
+import { ENV } from '../config/env';
+
 export const APP_CONSTANTS = {
   // API Configuration
-  API_KEY: 'af6d35a6abmsh3befba971df4822p12fe4cjsnf6981e775fd9',
-  API_HOST: 'exercisedb.p.rapidapi.com',
-  BASE_URL: 'https://exercisedb.p.rapidapi.com',
+  API_KEY: ENV.EXERCISE_DB_API_KEY,
+  API_HOST: ENV.EXERCISE_DB_API_HOST,
+  BASE_URL: ENV.EXERCISE_DB_BASE_URL,
   
   // Default body parts (lowercase to match API)
   DEFAULT_BODY_PARTS: [

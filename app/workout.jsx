@@ -9,6 +9,7 @@ import Animated, {
     useAnimatedScrollHandler,
     useSharedValue
 } from 'react-native-reanimated';
+import { SafeAreaView as SafeAreaViewContainer } from 'react-native-safe-area-context';
 
 export default function Workout() {
   const router = useRouter();
@@ -93,7 +94,7 @@ export default function Workout() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaViewContainer style={styles.container}>
       <AnimatedHeader scrollOffset={scrollOffset} />
 
       <Animated.View 
@@ -164,7 +165,7 @@ export default function Workout() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaViewContainer>
   );
 }
 

@@ -14,6 +14,7 @@ import Animated, {
    useSharedValue,
    withSpring
 } from 'react-native-reanimated';
+import { SafeAreaView as SafeAreaViewContainer } from 'react-native-safe-area-context';
 
 export default function ExerciseDetail() {
   const router = useRouter();
@@ -201,7 +202,7 @@ export default function ExerciseDetail() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaViewContainer style={styles.container}>
       <Animated.View 
         entering={FadeInDown.duration(600)}
         style={styles.header}
@@ -399,7 +400,7 @@ export default function ExerciseDetail() {
           ))}
         </Animated.View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaViewContainer>
   );
 }
 

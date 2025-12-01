@@ -6,12 +6,13 @@ import { fetchAllExercises } from '@/services/exerciseService';
 import { getFavorites } from '@/utils/favoriteManager';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
     FadeInUp,
     useAnimatedScrollHandler,
     useSharedValue
 } from 'react-native-reanimated';
+import { SafeAreaView as SafeAreaViewContainer } from 'react-native-safe-area-context';
 
 // Group exercises by body part
 const groupExercisesByBodyPart = (exercises) => {
@@ -69,7 +70,7 @@ export default function Favorites() {
   });
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaViewContainer style={styles.container}>
       <AnimatedHeader scrollOffset={scrollOffset} />
 
       <Animated.View 
@@ -125,7 +126,7 @@ export default function Favorites() {
           ))}
         </Animated.ScrollView>
       )}
-    </SafeAreaView>
+    </SafeAreaViewContainer>
   );
 }
 

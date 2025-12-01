@@ -128,7 +128,7 @@ export default function Statistics() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaViewContainer style={styles.container}>
       <AnimatedHeader scrollOffset={scrollOffset} />
 
       <Animated.View 
@@ -206,7 +206,7 @@ export default function Statistics() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaViewContainer>
   );
 }
 
