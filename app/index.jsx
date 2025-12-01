@@ -3,6 +3,7 @@ import AnimatedTabBar from '@/components/AnimatedTabBar';
 import ExerciseCard from '@/components/ExerciseCard';
 import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
+import exercises from '@/data/exercises';
 import { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
@@ -12,22 +13,6 @@ import Animated, {
    useSharedValue,
    withSpring
 } from 'react-native-reanimated';
-
-// Dummy exercise data
-const dummyExercises = [
-  { id: 1, name: 'Push-ups', bodyPart: 'Chest', equipment: 'Bodyweight', location: 'home' },
-  { id: 2, name: 'Bench Press', bodyPart: 'Chest', equipment: 'Barbell', location: 'gym' },
-  { id: 3, name: 'Pull-ups', bodyPart: 'Back', equipment: 'Pull-up Bar', location: 'home' },
-  { id: 4, name: 'Lat Pulldown', bodyPart: 'Back', equipment: 'Machine', location: 'gym' },
-  { id: 5, name: 'Bicep Curls', bodyPart: 'Arms', equipment: 'Dumbbells', location: 'gym' },
-  { id: 6, name: 'Tricep Dips', bodyPart: 'Arms', equipment: 'Parallel Bars', location: 'home' },
-  { id: 7, name: 'Squats', bodyPart: 'Legs', equipment: 'Bodyweight', location: 'home' },
-  { id: 8, name: 'Leg Press', bodyPart: 'Legs', equipment: 'Machine', location: 'gym' },
-  { id: 9, name: 'Plank', bodyPart: 'Core', equipment: 'Bodyweight', location: 'home' },
-  { id: 10, name: 'Russian Twists', bodyPart: 'Core', equipment: 'Medicine Ball', location: 'gym' },
-  { id: 11, name: 'Shoulder Press', bodyPart: 'Shoulders', equipment: 'Dumbbells', location: 'gym' },
-  { id: 12, name: 'Lateral Raises', bodyPart: 'Shoulders', equipment: 'Dumbbells', location: 'home' },
-];
 
 // Group exercises by body part
 const groupExercisesByBodyPart = (exercises) => {
@@ -47,8 +32,8 @@ export default function Index() {
   
   // Filter exercises based on location
   const filteredExercises = locationFilter === 'both' 
-    ? dummyExercises 
-    : dummyExercises.filter(exercise => exercise.location === locationFilter);
+    ? exercises 
+    : exercises.filter(exercise => exercise.location === locationFilter);
   
   const groupedExercises = groupExercisesByBodyPart(filteredExercises);
 
