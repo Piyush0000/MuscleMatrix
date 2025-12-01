@@ -14,7 +14,7 @@ import Animated, {
 
 const AnimatedTabBar = () => {
   const router = useRouter();
-  const activeTab = useSharedValue(0); // 0 = Home, 1 = Exercises, 2 = Profile
+  const activeTab = useSharedValue(0); // 0 = Home, 1 = Exercises, 2 = Favorites, 3 = Workout, 4 = Statistics, 5 = Settings, 6 = Profile
 
   const handleTabPress = (tabIndex) => {
     activeTab.value = withSpring(tabIndex);
@@ -28,8 +28,19 @@ const AnimatedTabBar = () => {
         // For now, we'll stay on the same screen
         break;
       case 2:
-        // Profile screen - for now just log
-        console.log('Profile tab pressed');
+        router.push('/favorites');
+        break;
+      case 3:
+        router.push('/workout');
+        break;
+      case 4:
+        router.push('/statistics');
+        break;
+      case 5:
+        router.push('/settings');
+        break;
+      case 6:
+        router.push('/profile');
         break;
     }
   };
@@ -37,8 +48,8 @@ const AnimatedTabBar = () => {
   const indicatorStyle = useAnimatedStyle(() => {
     const translateX = interpolate(
       activeTab.value,
-      [0, 1, 2],
-      [20, 120, 220],
+      [0, 1, 2, 3, 4, 5, 6],
+      [8, 65, 122, 179, 236, 293, 350],
       Extrapolate.CLAMP
     );
 
@@ -69,7 +80,11 @@ const AnimatedTabBar = () => {
     switch(tabIndex) {
       case 0: return 'home';
       case 1: return 'fitness';
-      case 2: return 'person';
+      case 2: return 'star';
+      case 3: return 'barbell';
+      case 4: return 'stats-chart';
+      case 5: return 'settings';
+      case 6: return 'person';
       default: return 'home';
     }
   };
@@ -78,7 +93,11 @@ const AnimatedTabBar = () => {
     switch(tabIndex) {
       case 0: return 'Home';
       case 1: return 'Exercises';
-      case 2: return 'Profile';
+      case 2: return 'Favorites';
+      case 3: return 'Workout';
+      case 4: return 'Statistics';
+      case 5: return 'Settings';
+      case 6: return 'Profile';
       default: return 'Home';
     }
   };
@@ -91,7 +110,7 @@ const AnimatedTabBar = () => {
       <View style={styles.tabBar}>
         <Animated.View style={[styles.indicator, indicatorStyle]} />
         
-        {[0, 1, 2].map((tabIndex) => (
+        {[0, 1, 2, 3, 4, 5, 6].map((tabIndex) => (
           <TouchableOpacity 
             key={tabIndex}
             style={styles.tab}

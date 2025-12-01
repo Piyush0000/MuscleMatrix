@@ -2,7 +2,8 @@ import Colors from '@/constants/Colors';
 import Typography from '@/constants/Typography';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
    BounceIn,
    FadeInDown,
@@ -14,28 +15,52 @@ import Animated, {
    withSpring
 } from 'react-native-reanimated';
 
-// Dummy exercise data for demonstration
-const dummyExercises = [
-  { id: 1, name: 'Push-ups', bodyPart: 'Chest', equipment: 'Bodyweight', location: 'home', description: 'A basic upper body exercise that works the chest, shoulders, and triceps.', instructions: ['Start in a plank position with hands slightly wider than shoulder-width apart', 'Lower your body until chest nearly touches the floor', 'Pause, then push yourself back up', 'Repeat for desired repetitions'], tips: ['Keep your body straight throughout the movement', 'Engage your core to prevent sagging hips', 'Control the descent for maximum benefit'] },
-  { id: 2, name: 'Bench Press', bodyPart: 'Chest', equipment: 'Barbell', location: 'gym', description: 'A classic compound exercise for building chest strength and mass.', instructions: ['Lie flat on a bench with feet firmly planted on the ground', 'Grab the barbell with hands slightly wider than shoulder-width', 'Lower the bar to your mid-chest', 'Press the bar back up explosively', 'Lock out at the top without hyperextending elbows'], tips: ['Arch your back slightly for better leverage', 'Keep your shoulder blades retracted', 'Breathe in as you lower, breathe out as you press'] },
-  { id: 3, name: 'Pull-ups', bodyPart: 'Back', equipment: 'Pull-up Bar', location: 'home', description: 'An excellent bodyweight exercise for building upper back and arm strength.', instructions: ['Grab the pull-up bar with palms facing away', 'Hang with arms fully extended', 'Pull your body up until chin is above the bar', 'Lower yourself back down with control', 'Repeat for desired repetitions'], tips: ['Engage your lats by pulling your elbows down', 'Avoid swinging or kipping movements', 'Focus on controlled movement throughout'] },
-  { id: 4, name: 'Lat Pulldown', bodyPart: 'Back', equipment: 'Machine', location: 'gym', description: 'A machine-based alternative to pull-ups that targets the latissimus dorsi.', instructions: ['Sit with thighs under the pads and grab the bar with wide overhand grip', 'Lean back slightly and pull the bar to your chest', 'Squeeze your shoulder blades together at the bottom', 'Slowly return to starting position', 'Repeat for desired repetitions'], tips: ['Avoid leaning back too far', 'Focus on using your back muscles, not momentum', 'Keep your chest up throughout the movement'] },
-  { id: 5, name: 'Bicep Curls', bodyPart: 'Arms', equipment: 'Dumbbells', location: 'gym', description: 'An isolation exercise specifically targeting the biceps brachii muscle.', instructions: ['Stand upright with dumbbells at your sides', 'Keeping elbows stationary, curl weights up toward shoulders', 'Rotate wrists so palms face upward at the top', 'Slowly lower the weights back to starting position', 'Repeat for desired repetitions'], tips: ['Keep your elbows close to your torso', 'Avoid swinging the weights', 'Maintain control throughout the movement'] },
-  { id: 6, name: 'Tricep Dips', bodyPart: 'Arms', equipment: 'Parallel Bars', location: 'home', description: 'A bodyweight exercise that primarily targets the triceps muscles.', instructions: ['Position yourself between parallel bars and support your weight', 'Lower your body by bending your elbows to 90 degrees', 'Push yourself back up to starting position', 'Keep your body upright throughout the movement', 'Repeat for desired repetitions'], tips: ['Lean forward slightly to emphasize triceps', 'Keep your shoulders down and back', 'Control the descent to maximize effectiveness'] },
-  { id: 7, name: 'Squats', bodyPart: 'Legs', equipment: 'Bodyweight', location: 'home', description: 'A fundamental compound exercise that works the quads, glutes, and hamstrings.', instructions: ['Stand with feet shoulder-width apart', 'Lower your body by bending knees and pushing hips back', 'Descend until thighs are parallel to floor', 'Drive through heels to return to standing position', 'Repeat for desired repetitions'], tips: ['Keep your chest up and back straight', 'Knees should track over toes', 'Descend slowly for better muscle activation'] },
-  { id: 8, name: 'Leg Press', bodyPart: 'Legs', equipment: 'Machine', location: 'gym', description: 'A machine-based leg exercise that allows heavy loading while reducing spinal stress.', instructions: ['Sit with back against pad and feet shoulder-width on platform', 'Release safety handles and lower platform by bending knees', 'Stop when knees are at 90-degree angle', 'Press platform back up by extending legs', 'Repeat for desired repetitions'], tips: ['Do not lock out knees at the top', 'Keep feet flat on the platform', 'Control the descent to avoid injury'] },
-  { id: 9, name: 'Plank', bodyPart: 'Core', equipment: 'Bodyweight', location: 'home', description: 'An isometric core exercise that strengthens the entire midsection.', instructions: ['Start in a push-up position but rest on forearms', 'Keep body straight from head to heels', 'Engage core and hold position', 'Keep neck neutral by looking at floor', 'Hold for desired time'], tips: ['Squeeze your glutes and engage your core', 'Don\'t let your hips sag or rise', 'Breathe steadily throughout the hold'] },
-  { id: 10, name: 'Russian Twists', bodyPart: 'Core', equipment: 'Medicine Ball', location: 'gym', description: 'A rotational core exercise that targets the obliques and transverse abdominis.', instructions: ['Sit on floor with knees bent and lean back slightly', 'Hold medicine ball with both hands', 'Twist torso to right and tap ball on floor', 'Return to center and twist to left side', 'Continue alternating for desired repetitions'], tips: ['Keep your core engaged throughout', 'Move slowly and with control', 'Focus on rotation from the torso, not just the arms'] },
-  { id: 11, name: 'Shoulder Press', bodyPart: 'Shoulders', equipment: 'Dumbbells', location: 'gym', description: 'An overhead pressing movement that develops deltoid strength and size.', instructions: ['Sit on bench with back support and dumbbells at shoulder height', 'Press weights upward until arms are fully extended', 'Pause at the top, then slowly lower back to start', 'Keep core tight throughout the movement', 'Repeat for desired repetitions'], tips: ['Avoid arching your back excessively', 'Keep dumbbells aligned with ears', 'Control the weight on the descent'] },
-  { id: 12, name: 'Lateral Raises', bodyPart: 'Shoulders', equipment: 'Dumbbells', location: 'home', description: 'An isolation exercise that targets the lateral deltoids for shoulder width.', instructions: ['Stand with dumbbells at sides, palms facing inward', 'Raise arms out to sides until parallel with floor', 'Pause at the top, then slowly lower back to start', 'Keep slight bend in elbows throughout', 'Repeat for desired repetitions'], tips: ['Use lighter weights for better form', 'Avoid swinging or using momentum', 'Focus on squeezing the shoulder muscles at the top'] },
-];
-
 export default function ExerciseDetail() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const [exercise, setExercise] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [speed, setSpeed] = useState(1);
+  const [loop, setLoop] = useState(true);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [workoutSets, setWorkoutSets] = useState([]);
+  const timerRef = useRef(null);
   
-  // Find the exercise by ID
-  const exercise = dummyExercises.find(ex => ex.id.toString() === id) || dummyExercises[0];
+  // Fetch exercise data
+  useEffect(() => {
+    const fetchExercise = async () => {
+      try {
+        setLoading(true);
+        // Try to fetch by ID first
+        try {
+          const exerciseData = await fetchExerciseById(id);
+          setExercise(mapExerciseData(exerciseData));
+        } catch (err) {
+          // If ID fetch fails, try to find by name
+          console.log('Fetching by ID failed, trying by name...');
+          const exercises = await fetchAllExercises();
+          const foundExercise = exercises.find(ex => ex.id == id || ex.name === id);
+          if (foundExercise) {
+            setExercise(mapExerciseData(foundExercise));
+          } else {
+            setError('Exercise not found');
+          }
+        }
+      } catch (err) {
+        setError('Failed to load exercise details');
+        console.error('Error loading exercise:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (id) {
+      fetchExercise();
+    }
+  }, [id]);
   
   const scale = useSharedValue(1);
   
@@ -52,20 +77,128 @@ export default function ExerciseDetail() {
   const handlePressOut = () => {
     scale.value = withSpring(1);
   };
+  
+  // Timer functions
+  const startTimer = () => {
+    if (!timerRunning) {
+      setTimerRunning(true);
+      timerRef.current = setInterval(() => {
+        setTimerSeconds(prev => prev + 1);
+      }, 1000);
+    }
+  };
+  
+  const pauseTimer = () => {
+    if (timerRunning) {
+      clearInterval(timerRef.current);
+      setTimerRunning(false);
+    }
+  };
+  
+  const resetTimer = () => {
+    clearInterval(timerRef.current);
+    setTimerRunning(false);
+    setTimerSeconds(0);
+  };
+  
+  const addSet = () => {
+    const newSet = {
+      id: Date.now(),
+      duration: timerSeconds,
+      timestamp: new Date().toLocaleTimeString()
+    };
+    setWorkoutSets([...workoutSets, newSet]);
+    resetTimer();
+  };
+  
+  // Format time for display
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+  
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   // Get color based on body part
   const getBodyPartColor = (bodyPart) => {
     const colors = {
-      Chest: Colors.chest,
-      Back: Colors.back,
-      Arms: Colors.arms,
-      Legs: Colors.legs,
-      Core: Colors.core,
-      Shoulders: Colors.shoulders,
+      chest: Colors.chest,
+      back: Colors.back,
+      arms: Colors.arms,
+      legs: Colors.legs,
+      core: Colors.core,
+      shoulders: Colors.shoulders,
       default: Colors.secondary
     };
-    return colors[bodyPart] || colors.default;
+    return colors[bodyPart?.toLowerCase()] || colors.default;
   };
+
+  // Map API exercise data to our expected format
+  const mapExerciseData = (apiExercise) => {
+    return {
+      id: apiExercise.id,
+      name: apiExercise.name,
+      bodyPart: apiExercise.bodyPart,
+      target: apiExercise.target,
+      equipment: apiExercise.equipment,
+      gifUrl: apiExercise.gifUrl,
+      secondaryMuscles: apiExercise.secondaryMuscles,
+      instructions: apiExercise.instructions,
+      description: apiExercise.instructions?.join(' ') || 'No description available',
+      tips: ['Proper form is essential for effectiveness and injury prevention', 'Start with lighter weights and progress gradually', 'Maintain controlled movements throughout the exercise']
+    };
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Loading exercise details...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!exercise) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Exercise not found</Text>
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            style={styles.retryButton}
+          >
+            <Text style={styles.retryButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -82,7 +215,15 @@ export default function ExerciseDetail() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.title} numberOfLines={1}>{exercise.name}</Text>
-        <View style={styles.headerSpacer} />
+        <TouchableOpacity 
+          onPress={() => {
+            // Share functionality would go here
+            console.log('Share exercise:', exercise.name);
+          }}
+          style={styles.shareButton}
+        >
+          <Ionicons name="share-outline" size={24} color="#fff" />
+        </TouchableOpacity>
       </Animated.View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -91,9 +232,73 @@ export default function ExerciseDetail() {
           style={styles.imageContainer}
         >
           <Image 
-            source={{ uri: 'https://via.placeholder.com/400/' + getBodyPartColor(exercise.bodyPart).replace('#', '') + '/FFFFFF?text=' + exercise.name.charAt(0) }} 
+            source={{ uri: exercise.gifUrl || 'https://via.placeholder.com/400/' + getBodyPartColor(exercise.bodyPart || exercise.target).replace('#', '') + '/FFFFFF?text=' + exercise.name.charAt(0) }} 
             style={styles.image}
+            onError={(e) => {
+              // Fallback to placeholder if GIF fails to load
+              e.target.onError = null;
+              e.target.source = { uri: 'https://via.placeholder.com/400/' + getBodyPartColor(exercise.bodyPart || exercise.target).replace('#', '') + '/FFFFFF?text=' + exercise.name.charAt(0) };
+            }}
           />
+          
+          {/* Animation Controls */}
+          <View style={styles.animationControls}>
+            <TouchableOpacity style={styles.controlButton} onPress={() => setIsPlaying(!isPlaying)}>
+              <Text style={styles.controlText}>{isPlaying ? '⏸' : '▶'}</Text>
+            </TouchableOpacity>
+            
+            <View style={styles.speedControls}>
+              <TouchableOpacity 
+                style={[styles.speedButton, speed === 0.5 && styles.activeSpeedButton]} 
+                onPress={() => setSpeed(0.5)}
+              >
+                <Text style={[styles.speedText, speed === 0.5 && styles.activeSpeedText]}>0.5x</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.speedButton, speed === 1 && styles.activeSpeedButton]} 
+                onPress={() => setSpeed(1)}
+              >
+                <Text style={[styles.speedText, speed === 1 && styles.activeSpeedText]}>1x</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.speedButton, speed === 2 && styles.activeSpeedButton]} 
+                onPress={() => setSpeed(2)}
+              >
+                <Text style={[styles.speedText, speed === 2 && styles.activeSpeedText]}>2x</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <TouchableOpacity style={styles.controlButton} onPress={() => setLoop(!loop)}>
+              <Text style={[styles.controlText, loop && styles.activeLoop]}>{loop ? '🔁' : '🔂'}</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {/* Timer Controls */}
+          <View style={styles.timerContainer}>
+            <View style={styles.timerDisplay}>
+              <Text style={styles.timerText}>{formatTime(timerSeconds)}</Text>
+            </View>
+            <View style={styles.timerControls}>
+              <TouchableOpacity 
+                style={[styles.timerButton, timerRunning && styles.timerButtonActive]}
+                onPress={timerRunning ? pauseTimer : startTimer}
+              >
+                <Text style={styles.timerButtonText}>{timerRunning ? '⏸ Pause' : '▶ Start'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.timerButton, styles.resetButton]}
+                onPress={resetTimer}
+              >
+                <Text style={styles.timerButtonText}>↺ Reset</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.timerButton, styles.addButton]}
+                onPress={addSet}
+              >
+                <Text style={styles.timerButtonText}>+ Add Set</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </Animated.View>
 
         <Animated.View 
@@ -101,15 +306,34 @@ export default function ExerciseDetail() {
           style={styles.infoContainer}
         >
           <View style={styles.badgeContainer}>
-            <View style={[styles.badge, styles.locationBadge, { backgroundColor: exercise.location === 'home' ? Colors.success : Colors.primary }]}>
-              <Text style={styles.badgeText}>{exercise.location === 'home' ? 'HomeAs' : 'Gym'}</Text>
+            <View style={[styles.badge, styles.locationBadge, { backgroundColor: exercise.location === 'home' ? Colors.success : exercise.location === 'gym' ? Colors.primary : Colors.warning }]}>
+              <Text style={styles.badgeText}>{exercise.location === 'home' ? 'Home' : 'Gym'}</Text>
             </View>
-            <View style={[styles.badge, styles.bodyPartBadge, { backgroundColor: getBodyPartColor(exercise.bodyPart) }]}>
-              <Text style={styles.badgeText}>{exercise.bodyPart}</Text>
+            <View style={[styles.badge, styles.bodyPartBadge, { backgroundColor: getBodyPartColor(exercise.bodyPart || exercise.target) }]}>
+              <Text style={styles.badgeText}>{exercise.bodyPart || exercise.target}</Text>
+            </View>
+            <View style={[styles.badge, styles.equipmentBadge, { backgroundColor: Colors.accent }]}>
+              <Text style={styles.badgeText}>{exercise.equipment}</Text>
             </View>
           </View>
           
-          <Text style={styles.description}>{exercise.description}</Text>
+          <Text style={styles.description}>{exercise.description || (exercise.instructions && Array.isArray(exercise.instructions) ? exercise.instructions.join(' ') : exercise.instructions)}</Text>
+
+          {/* Exercise Metadata */}
+          <View style={styles.metadataContainer}>
+            <View style={styles.metadataItem}>
+              <Text style={styles.metadataLabel}>Target Muscle:</Text>
+              <Text style={styles.metadataValue}>{exercise.target || exercise.bodyPart}</Text>
+            </View>
+            <View style={styles.metadataItem}>
+              <Text style={styles.metadataLabel}>Equipment:</Text>
+              <Text style={styles.metadataValue}>{exercise.equipment}</Text>
+            </View>
+            <View style={styles.metadataItem}>
+              <Text style={styles.metadataLabel}>Secondary Muscles:</Text>
+              <Text style={styles.metadataValue}>{exercise.secondaryMuscles && Array.isArray(exercise.secondaryMuscles) ? exercise.secondaryMuscles.join(', ') : 'None'}</Text>
+            </View>
+          </View>
         </Animated.View>
 
         <Animated.View 
@@ -120,7 +344,7 @@ export default function ExerciseDetail() {
             <Ionicons name="list-outline" size={24} color={Colors.primary} />
             <Text style={styles.sectionTitle}>Instructions</Text>
           </View>
-          {exercise.instructions.map((step, index) => (
+          {(Array.isArray(exercise.instructions) ? exercise.instructions : [exercise.instructions || 'No instructions available']).map((step, index) => (
             <Animated.View
               key={index}
               entering={FadeInUp.duration(300).delay(500 + index * 100)}
@@ -136,16 +360,37 @@ export default function ExerciseDetail() {
 
         <Animated.View 
           entering={SlideInLeft.duration(600).delay(500)}
+          style={styles.section}
+        >
+          <View style={styles.sectionHeader}>
+            <Ionicons name="time-outline" size={24} color={Colors.primary} />
+            <Text style={styles.sectionTitle}>Workout Sets</Text>
+          </View>
+          {workoutSets.length === 0 ? (
+            <Text style={styles.noSetsText}>No sets recorded yet. Start the timer to track your workout!</Text>
+          ) : (
+            workoutSets.map((set, index) => (
+              <View key={set.id} style={styles.setContainer}>
+                <Text style={styles.setText}>Set {index + 1}</Text>
+                <Text style={styles.setTimeText}>{formatTime(set.duration)}</Text>
+                <Text style={styles.setTimestamp}>{set.timestamp}</Text>
+              </View>
+            ))
+          )}
+        </Animated.View>
+        
+        <Animated.View 
+          entering={SlideInRight.duration(600).delay(600)}
           style={[styles.section, styles.lastSection]}
         >
           <View style={styles.sectionHeader}>
             <Ionicons name="bulb-outline" size={24} color={Colors.warning} />
             <Text style={styles.sectionTitle}>Tips</Text>
           </View>
-          {exercise.tips.map((tip, index) => (
+          {(exercise.tips && Array.isArray(exercise.tips) ? exercise.tips : ['Proper form is essential for effectiveness and injury prevention', 'Start with lighter weights and progress gradually', 'Maintain controlled movements throughout the exercise']).map((tip, index) => (
             <Animated.View
               key={index}
-              entering={FadeInUp.duration(300).delay(600 + index * 100)}
+              entering={FadeInUp.duration(300).delay(700 + index * 100)}
               style={styles.tipContainer}
             >
               <Ionicons name="information-circle-outline" size={20} color={Colors.primary} style={styles.tipIcon} />
@@ -185,8 +430,10 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 10,
   },
-  headerSpacer: {
-    width: 40,
+  shareButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.secondary,
   },
   scrollView: {
     flex: 1,
@@ -242,6 +489,9 @@ const styles = StyleSheet.create({
   bodyPartBadge: {
     backgroundColor: Colors.secondary,
   },
+  equipmentBadge: {
+    backgroundColor: Colors.accent,
+  },
   badgeText: {
     ...Typography.labelLarge,
     color: Colors.surface,
@@ -250,6 +500,28 @@ const styles = StyleSheet.create({
   description: {
     ...Typography.bodyLarge,
     color: Colors.textSecondary,
+  },
+  // Metadata styles
+  metadataContainer: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  metadataItem: {
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  metadataLabel: {
+    ...Typography.labelLarge,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+    width: 150,
+  },
+  metadataValue: {
+    ...Typography.bodyMedium,
+    color: Colors.textPrimary,
+    flex: 1,
   },
   section: {
     backgroundColor: Colors.surface,
@@ -317,5 +589,160 @@ const styles = StyleSheet.create({
     ...Typography.bodyLarge,
     color: Colors.textSecondary,
     flex: 1,
+  },
+  // Workout sets styles
+  noSetsText: {
+    ...Typography.bodyLarge,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    padding: 20,
+  },
+  setContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  setText: {
+    ...Typography.bodyLarge,
+    color: Colors.textPrimary,
+    fontWeight: '600',
+  },
+  setTimeText: {
+    ...Typography.bodyLarge,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  setTimestamp: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+  },
+  // Animation controls styles
+  animationControls: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  controlButton: {
+    padding: 8,
+  },
+  controlText: {
+    fontSize: 16,
+    color: 'white',
+  },
+  activeLoop: {
+    color: Colors.success,
+  },
+  speedControls: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
+    gap: 5,
+  },
+  speedButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 15,
+  },
+  activeSpeedButton: {
+    backgroundColor: Colors.primary,
+  },
+  speedText: {
+    fontSize: 12,
+    color: 'white',
+  },
+  activeSpeedText: {
+    fontWeight: 'bold',
+  },
+  // Timer styles
+  timerContainer: {
+    position: 'absolute',
+    bottom: 60,
+    left: 10,
+    right: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 25,
+    padding: 15,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  timerDisplay: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  timerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  timerControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  timerButton: {
+    flex: 1,
+    padding: 10,
+    marginHorizontal: 5,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+  },
+  timerButtonActive: {
+    backgroundColor: Colors.success,
+  },
+  resetButton: {
+    backgroundColor: Colors.danger,
+  },
+  addButton: {
+    backgroundColor: Colors.primary,
+  },
+  timerButtonText: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    ...Typography.bodyLarge,
+    color: Colors.textSecondary,
+    marginTop: 15,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    ...Typography.bodyLarge,
+    color: Colors.danger,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  retryButtonText: {
+    ...Typography.labelLarge,
+    color: Colors.surface,
+    fontWeight: '600',
   },
 });
