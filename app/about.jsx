@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function Index() {
+export default function About() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Welcome to Muscle Matrix App!</Text>
@@ -8,3 +8,15 @@ export default function Index() {
   );
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  text: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});
